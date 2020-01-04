@@ -1,0 +1,13 @@
+celery==4.4.0
+Django==2.2.8
+django-cleanup==4.0.0
+django-cors-middleware==1.5.0
+django-filter==2.2.0
+django-oauth-toolkit==1.2.0
+django-redis==4.11.0
+django-rest-swagger==2.2.0
+djangorestframework==3.11.0
+drf-extensions==0.5.0
+# Pillow==4.3.0
+PyMySQL==0.9.3
+requests==2.22.0

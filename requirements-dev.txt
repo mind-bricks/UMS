@@ -1,0 +1,7 @@
+-r requirements.txt
+
+autopep8==1.4.4
+coverage==5.0.1
+fakeredis==1.1.0
+flake8==3.7.9
+requests-mock==1.7.0
