@@ -1,28 +1,23 @@
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
-from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from oauth2_provider import scopes
-from rest_framework import authentication, exceptions
+from rest_framework import (
+    authentication,
+    exceptions,
+)
 
-from .authentication import verify as auth_verify
+from .access import (
+    find_permissions,
+    find_user_permissions,
+)
+from .authentication import (
+    verify as auth_verify,
+)
 
 
 class SettingsScopes(scopes.BaseScopes):
 
-    @cached_property
-    def content_type(self):
-        return ContentType.objects.get_for_model(get_user_model())
-
     def get_all_scopes(self):
-        return [
-            perm.codename
-            for perm in Permission.objects.filter(
-                content_type=self.content_type,
-            ).all()
-        ]
+        return [perm.codename for perm in find_permissions()]
 
     def get_available_scopes(
             self,
@@ -32,16 +27,10 @@ class SettingsScopes(scopes.BaseScopes):
             **kwargs
     ):
         user = application and application.user
-        return user and [
+        return [
             perm.codename
-            for perm in Permission.objects.filter(
-                Q(content_type=self.content_type) &
-                (
-                    Q(user=user) |
-                    Q(group_set__user=user)
-                )
-            ).all()
-        ] or []
+            for perm in find_user_permissions(user)
+        ] if user else []
 
     def get_default_scopes(
             self,

@@ -1,0 +1,46 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$36000$xo72EJ0nLBeh$LkiRz8CjO4fcAaCyAE2IsFXz2Fswz9jRuvJqZJpzPWQ=",
+      "last_login": null,
+      "is_superuser": true,
+      "uuid": "dc9b60b8-3115-11ea-bbc8-a86bad54c153",
+      "username": "dc9b60b8-3115-11ea-bbc8-a86bad54c153",
+      "realm": "",
+      "realm_username": "test_admin",
+      "first_name": "admin_first_name",
+      "last_name": "admin_last_name",
+      "email": "test_admin@test.com",
+      "mobile": "110",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2018-09-26T02:35:48.624Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$36000$xo72EJ0nLBeh$LkiRz8CjO4fcAaCyAE2IsFXz2Fswz9jRuvJqZJpzPWQ=",
+      "last_login": null,
+      "is_superuser": false,
+      "uuid": "cd927db8-3115-11ea-bbc8-a86bad54c153",
+      "username": "cd927db8-3115-11ea-bbc8-a86bad54c153",
+      "realm": "",
+      "realm_username": "test_user",
+      "first_name": "test_first_name",
+      "last_name": "test_last_name",
+      "email": "test_user@test.com",
+      "mobile": "123456789",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2018-09-26T02:35:48.624Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]

@@ -18,9 +18,15 @@ from rest_framework import (
     status,
 )
 
-from ..authentication import verify as auth_verify
-from ..permissions import TokenHasScope
-from .serializers import IntrospectTokenSerializer
+from ..authentication import (
+    verify as auth_verify,
+)
+from ..permissions import (
+    TokenHasScope,
+)
+from .serializers import (
+    IntrospectTokenSerializer,
+)
 
 
 class IntrospectTokenView(generics.GenericAPIView):

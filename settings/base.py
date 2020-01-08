@@ -18,7 +18,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -26,6 +25,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'apps.apps.AppConfig4OAuth',
 
     'corsheaders',
     'django_cleanup',
@@ -35,7 +36,6 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'apps.apps.AppConfig4Users',
-    'apps.apps.AppConfig4OAuth',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -154,6 +154,10 @@ REST_FRAMEWORK = {
 }
 
 # OAuth2 Provider
+OAUTH2_PROVIDER_APPLICATION_MODEL = 'oauth.Application'
+OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL = 'oauth.AccessToken'
+OAUTH2_PROVIDER_GRANT_MODEL = 'oauth.Grant'
+OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL = 'oauth.RefreshToken'
 OAUTH2_PROVIDER = {
     'SCOPES_BACKEND_CLASS': 'apps.backends.SettingsScopes',
     'REFRESH_TOKEN_EXPIRE_SECONDS': 86400,

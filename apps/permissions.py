@@ -1,6 +1,8 @@
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import permissions
 
+from .access import find_user_permissions
+
 
 class TokenHasScope(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -16,7 +18,7 @@ class TokenHasScope(permissions.BasePermission):
         if not required_scopes:
             return True
 
-        if token.application:
+        if token.scope:
             # for oauth2 login
             return any(
                 token.allow_scopes(required_scope.split())
@@ -25,8 +27,11 @@ class TokenHasScope(permissions.BasePermission):
 
         else:
             # for normal login
+            user_permissions = frozenset(
+                perm.codename for
+                perm in find_user_permissions(request.user))
             return any(
-                request.user.has_perms(required_scope.split())
+                user_permissions.issuperset(required_scope.split())
                 for required_scope in required_scopes
             )
 
