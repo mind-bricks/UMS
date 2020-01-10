@@ -1,0 +1,63 @@
+[
+  {
+    "model": "auth.permission",
+    "pk": 1,
+    "fields": {
+      "name": "introspection",
+      "codename": "introspection",
+      "content_type": [
+        "auth",
+        "permission"
+      ]
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 2,
+    "fields": {
+      "name": "users.admin",
+      "codename": "users.admin",
+      "content_type": [
+        "auth",
+        "permission"
+      ]
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 3,
+    "fields": {
+      "name": "groups.admin",
+      "codename": "groups.admin",
+      "content_type": [
+        "auth",
+        "permission"
+      ]
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 4,
+    "fields": {
+      "name": "permissions.admin",
+      "codename": "permissions.admin",
+      "content_type": [
+        "auth",
+        "permission"
+      ]
+    }
+  },
+  {
+    "model": "auth.group",
+    "pk": 1,
+    "fields": {
+      "name": "superuser",
+      "permissions": [
+        1,
+        2,
+        3,
+        4
+      ]
+    }
+  }
+]

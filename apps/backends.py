@@ -51,7 +51,7 @@ class SettingsAuthentication(authentication.BaseAuthentication):
 
     def authenticate(self, request):
         auth = authentication.get_authorization_header(request).split()
-        if not auth or auth[0].lower() != 'bearer':
+        if not auth or auth[0].lower() != b'bearer':
             return None
 
         if len(auth) == 1:
@@ -67,19 +67,19 @@ class SettingsAuthentication(authentication.BaseAuthentication):
         try:
             token = auth[1].decode()
         except UnicodeError:
-
             msg = _(
                 'Invalid token header. '
                 'Token string should not contain invalid characters.')
             raise exceptions.AuthenticationFailed(msg)
 
         credentials = self.authenticate_credentials(token)
+        if not credentials:
+            msg = _('Invalid token.')
+            raise exceptions.AuthenticationFailed(msg)
+
         return (
-            credentials and
-            (
-                credentials[0],
-                credentials[1],
-            )
+            credentials[0],
+            credentials[1],
         )
 
     @staticmethod

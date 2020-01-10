@@ -58,17 +58,23 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class PermissionSerializer(serializers.Serializer):
-    name = serializers.CharField()
+    name = serializers.CharField(
+        source='codename',
+    )
 
     def create(self, validated_data):
-        name = validated_data['name']
+        name = validated_data['codename']
         name = name.lower()
         name = name.strip()
-        name = name.replace(' ', '.')
-        return create_permission(
+        name = name.replace(' ', '|')
+        instance = create_permission(
             name=name,
             codename=name,
         )
+        if not instance:
+            raise exceptions.ValidationError(
+                'duplicated permission')
+        return instance
 
     def update(self, instance, validated_data):
         raise AssertionError('not allowed')
@@ -108,6 +114,7 @@ class UserLoginSerializer(serializers.Serializer):
         user = get_user(
             realm=validated_data['realm'],
             realm_username=validated_data['username'],
+            is_active=True,
         )
         if (
                 not user or
@@ -129,9 +136,18 @@ class UserLoginSerializer(serializers.Serializer):
 
         return {
             'access_token': access_token.token,
-            'refresh_token': refresh_token and refresh_token.token,
+            'refresh_token': refresh_token.token,
             'expires_in': USERS_LOGIN_EXPIRE,
         }
+
+    def update(self, instance, validated_data):
+        raise AssertionError('not allowed')
+
+
+class UserSignupSerializer(serializers.Serializer):
+
+    def create(self, validated_data):
+        raise AssertionError('not allowed')
 
     def update(self, instance, validated_data):
         raise AssertionError('not allowed')
