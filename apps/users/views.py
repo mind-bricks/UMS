@@ -7,9 +7,9 @@ from rest_framework import (
     response,
     viewsets,
 )
-# from rest_framework_extensions.mixins import (
-#     NestedViewSetMixin,
-# )
+from rest_framework_extensions.mixins import (
+    NestedViewSetMixin,
+)
 
 from ..permissions import (
     TokenHasScope,
@@ -18,13 +18,19 @@ from .access import (
     find_users,
     find_groups,
     find_permissions,
+    find_user_permissions,
+    get_user,
     get_group,
     get_permission,
 )
 from .serializers import (
     UserSerializer,
     UserLoginSerializer,
+    UserPasswordSerializer,
+    UserGroupSerializer,
+    UserPermissionSerializer,
     GroupSerializer,
+    GroupPermissionSerializer,
     PermissionSerializer,
 )
 
@@ -69,6 +75,42 @@ class UserViewSet(
         return response.Response(serializer.data)
 
     @decorators.action(
+        methods=['get'],
+        url_path='self/groups',
+        url_name='self-groups',
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=UserGroupSerializer,
+    )
+    def self_groups(self, request):
+        queryset = request.user.groups.all()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return response.Response(serializer.data)
+
+    @decorators.action(
+        methods=['get'],
+        url_path='self/permissions',
+        url_name='self-permissions',
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=UserPermissionSerializer,
+    )
+    def self_permissions(self, request):
+        queryset = find_user_permissions(request.user)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return response.Response(serializer.data)
+
+    @decorators.action(
         methods=['post'],
         detail=False,
         permission_classes=[],
@@ -80,6 +122,80 @@ class UserViewSet(
         serializer.save()
         return response.Response(serializer.data)
 
+    @decorators.action(
+        methods=['post'],
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class=UserPasswordSerializer,
+    )
+    def password(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response(serializer.data)
+
+
+class UserGroupViewSet(
+    NestedViewSetMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    lookup_field = 'name'
+    lookup_value_regex = '[^/]+'
+    permission_classes = [TokenHasScope]
+    queryset = find_groups()
+    required_scopes = ['users.admin']
+    serializer_class = UserGroupSerializer
+
+    def perform_create(self, serializer):
+        user = self.kwargs.get('parent_lookup_user__uuid')
+        user = user and get_user(uuid=user)
+        if not user:
+            raise exceptions.NotFound('user not found')
+
+        serializer.save(user=user)
+
+    def perform_destroy(self, instance):
+        user = self.kwargs.get('parent_lookup_user__uuid')
+        user = user and get_user(uuid=user)
+        if not user:
+            raise exceptions.NotFound('user not found')
+
+        user.groups.remove(instance)
+
+
+class UserPermissionViewSet(
+    NestedViewSetMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    lookup_field = 'codename'
+    lookup_value_regex = '[^/]+'
+    permission_classes = [TokenHasScope]
+    queryset = find_permissions()
+    required_scopes = ['users.admin']
+    serializer_class = UserPermissionSerializer
+
+    def perform_create(self, serializer):
+        user = self.kwargs.get('parent_lookup_user__uuid')
+        user = user and get_user(uuid=user)
+        if not user:
+            raise exceptions.NotFound('user not found')
+
+        serializer.save(user=user)
+
+    def perform_destroy(self, instance):
+        user = self.kwargs.get('parent_lookup_user__uuid')
+        user = user and get_user(uuid=user)
+        if not user:
+            raise exceptions.NotFound('user not found')
+
+        user.user_permissions.remove(instance)
+
 
 class GroupViewSet(
     mixins.ListModelMixin,
@@ -88,6 +204,7 @@ class GroupViewSet(
     viewsets.GenericViewSet,
 ):
     lookup_field = 'name'
+    lookup_value_regex = '[^/]+'
     permission_classes = [TokenHasScope]
     queryset = find_groups()
     required_scopes = ['groups.admin']
@@ -100,6 +217,37 @@ class GroupViewSet(
         ):
             raise exceptions.NotAcceptable('group is referenced')
         instance.delete()
+
+
+class GroupPermissionViewSet(
+    NestedViewSetMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    lookup_field = 'codename'
+    lookup_value_regex = '[^/]+'
+    permission_classes = [TokenHasScope]
+    queryset = find_permissions()
+    required_scopes = ['groups.admin']
+    serializer_class = GroupPermissionSerializer
+
+    def perform_create(self, serializer):
+        group = self.kwargs.get('parent_lookup_group__name')
+        group = group and get_group(name=group)
+        if not group:
+            raise exceptions.NotFound('user not found')
+
+        serializer.save(group=group)
+
+    def perform_destroy(self, instance):
+        group = self.kwargs.get('parent_lookup_group__name')
+        group = group and get_group(name=group)
+        if not group:
+            raise exceptions.NotFound('user not found')
+
+        group.permissions.remove(instance)
 
 
 class PermissionViewSet(
@@ -124,11 +272,3 @@ class PermissionViewSet(
         ):
             raise exceptions.NotAcceptable('permission is referenced')
         instance.delete()
-
-
-class UserGroupViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    viewsets.GenericViewSet,
-):
-    lookup_field = 'name'

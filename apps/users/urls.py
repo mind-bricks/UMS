@@ -8,7 +8,10 @@ from rest_framework_extensions import (
 
 from .views import (
     UserViewSet,
+    UserGroupViewSet,
+    UserPermissionViewSet,
     GroupViewSet,
+    GroupPermissionViewSet,
     PermissionViewSet,
 )
 
@@ -18,10 +21,28 @@ router_user = router.register(
     UserViewSet,
     basename='users',
 )
+router_user.register(
+    'groups',
+    UserGroupViewSet,
+    basename='user-groups',
+    parents_query_lookups=['user__uuid'],
+)
+router_user.register(
+    'permissions',
+    UserPermissionViewSet,
+    basename='user-permissions',
+    parents_query_lookups=['user__uuid'],
+)
 router_group = router.register(
     'groups',
     GroupViewSet,
     basename='groups',
+)
+router_group.register(
+    'permissions',
+    GroupPermissionViewSet,
+    basename='group-permissions',
+    parents_query_lookups=['group__name'],
 )
 router.register(
     'permissions',

@@ -31,6 +31,26 @@ class UserPostLoginTest(test.APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer {}'.format(
             response.data.get('access_token')))
 
+    def test_change_user_password(self):
+        url_password = reverse.reverse('users:users-password')
+        url_login = reverse.reverse('users:users-login')
+        response = self.client.post(url_password, data={
+            'password': '111111',
+            'password_new': '123456789',
+        })
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        response = self.client.post(url_password, data={
+            'password': 'abcdefgh',
+            'password_new': '123456789',
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.client.credentials()
+        response = self.client.post(url_login, data={
+            'username': 'test_user',
+            'password': '123456789',
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_retrieve_user_self(self):
         url_self = reverse.reverse('users:users-self')
         response = self.client.get(url_self)
@@ -46,6 +66,18 @@ class UserPostLoginTest(test.APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get('first_name'), 'new first name')
         self.assertEqual(response.data.get('last_name'), 'new last name')
+
+    def test_list_user_self_group(self):
+        url_self = reverse.reverse('users:users-self-groups')
+        response = self.client.get(url_self)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 1)
+
+    def test_list_user_self_permission(self):
+        url_self = reverse.reverse('users:users-self-permissions')
+        response = self.client.get(url_self)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 2)
 
 
 class AdminTest(test.APITestCase):
@@ -128,7 +160,7 @@ class GroupAdminTest(AdminTest):
             HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
         response = self.client.get(url_list)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get('count'), 2)
+        self.assertEqual(response.data.get('count'), 3)
 
     def test_create_group(self):
         url_list = reverse.reverse('users:groups-list')
@@ -161,6 +193,63 @@ class GroupAdminTest(AdminTest):
         response = self.client.delete(url_detail_2)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
+    def test_list_user_group(self):
+        url_list = reverse.reverse('users:user-groups-list', [
+            'cd927db8-3115-11ea-bbc8-a86bad54c153'])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_user))
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 1)
+
+    def test_create_user_group(self):
+        url_list = reverse.reverse('users:user-groups-list', [
+            'cd927db8-3115-11ea-bbc8-a86bad54c153'])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_user))
+        response = self.client.post(
+            url_list, data={'name': 'test_group'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
+        response = self.client.post(
+            url_list, data={'name': 'test_group'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(
+            url_list, data={'name': 'test_group_not_existing'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 2)
+
+    def test_destroy_user_group(self):
+        url_detail = reverse.reverse('users:user-groups-detail', [
+            'cd927db8-3115-11ea-bbc8-a86bad54c153',
+            'test_group_1'
+        ])
+        url_list = reverse.reverse('users:user-groups-list', [
+            'cd927db8-3115-11ea-bbc8-a86bad54c153'
+        ])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_user))
+        response = self.client.delete(url_detail)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
+        response = self.client.delete(url_detail)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 0)
+
 
 class PermissionAdminTest(AdminTest):
     def test_list_permission(self):
@@ -175,7 +264,7 @@ class PermissionAdminTest(AdminTest):
             HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
         response = self.client.get(url_list)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get('count'), 9)
+        self.assertEqual(response.data.get('count'), 11)
 
     def test_create_permission(self):
         url_list = reverse.reverse('users:permissions-list')
@@ -188,15 +277,15 @@ class PermissionAdminTest(AdminTest):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
         response = self.client.post(
-            url_list, data={'name': 'test.permission_2'})
+            url_list, data={'name': 'tmp.permission'})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.post(
-            url_list, data={'name': 'test.permission_2'})
+            url_list, data={'name': 'tmp.permission'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_destroy_permission(self):
         url_detail_1 = reverse.reverse(
-            'users:permissions-detail', ['test_permission'])
+            'users:permissions-detail', ['test.permission'])
         url_detail_2 = reverse.reverse(
             'users:permissions-detail', ['users.admin'])
         self.client.credentials(
@@ -211,3 +300,117 @@ class PermissionAdminTest(AdminTest):
 
         response = self.client.delete(url_detail_2)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    def test_list_user_permission(self):
+        url_list = reverse.reverse('users:user-permissions-list', [
+            'cd927db8-3115-11ea-bbc8-a86bad54c153'])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_user))
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 1)
+
+    def test_create_user_permission(self):
+        url_list = reverse.reverse('users:user-permissions-list', [
+            'cd927db8-3115-11ea-bbc8-a86bad54c153'])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_user))
+        response = self.client.post(
+            url_list, data={'name': 'test.permission'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
+        response = self.client.post(
+            url_list, data={'name': 'test.permission'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(
+            url_list, data={'name': 'test.permission_not_existing'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 2)
+
+    def test_destroy_user_permission(self):
+        url_detail = reverse.reverse('users:user-permissions-detail', [
+            'cd927db8-3115-11ea-bbc8-a86bad54c153',
+            'test.permission_1'
+        ])
+        url_list = reverse.reverse('users:user-permissions-list', [
+            'cd927db8-3115-11ea-bbc8-a86bad54c153'
+        ])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_user))
+        response = self.client.delete(url_detail)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
+        response = self.client.delete(url_detail)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 0)
+
+    def test_list_group_permission(self):
+        url_list = reverse.reverse(
+            'users:group-permissions-list', ['test_group_1'])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_user))
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 1)
+
+    def test_create_group_permission(self):
+        url_list = reverse.reverse(
+            'users:group-permissions-list', ['test_group_1'])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_user))
+        response = self.client.post(
+            url_list, data={'name': 'test.permission'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
+        response = self.client.post(
+            url_list, data={'name': 'test.permission'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(
+            url_list, data={'name': 'test.permission_not_existing'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 2)
+
+    def test_destroy_group_permission(self):
+        url_detail = reverse.reverse('users:group-permissions-detail', [
+            'test_group_1',
+            'test.permission_2'
+        ])
+        url_list = reverse.reverse('users:group-permissions-list', [
+            'test_group_1'
+        ])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_user))
+        response = self.client.delete(url_detail)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
+        response = self.client.delete(url_detail)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        response = self.client.get(url_list)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('count'), 0)

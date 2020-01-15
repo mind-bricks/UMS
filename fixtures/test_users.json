@@ -3,8 +3,32 @@
     "model": "auth.permission",
     "pk": 100,
     "fields": {
-      "name": "test_permission",
-      "codename": "test_permission",
+      "name": "test.permission",
+      "codename": "test.permission",
+      "content_type": [
+        "auth",
+        "permission"
+      ]
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 101,
+    "fields": {
+      "name": "test.permission_1",
+      "codename": "test.permission_1",
+      "content_type": [
+        "auth",
+        "permission"
+      ]
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 102,
+    "fields": {
+      "name": "test.permission_2",
+      "codename": "test.permission_2",
       "content_type": [
         "auth",
         "permission"
@@ -17,6 +41,16 @@
     "fields": {
       "name": "test_group",
       "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "pk": 101,
+    "fields": {
+      "name": "test_group_1",
+      "permissions": [
+        102
+      ]
     }
   },
   {
@@ -61,8 +95,12 @@
       "is_staff": false,
       "is_active": true,
       "date_joined": "2018-09-26T02:35:48.624Z",
-      "groups": [],
-      "user_permissions": []
+      "groups": [
+        101
+      ],
+      "user_permissions": [
+        101
+      ]
     }
   }
 ]
