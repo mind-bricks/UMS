@@ -26,8 +26,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'apps.apps.AppConfig4OAuth',
-
     'corsheaders',
     'django_cleanup',
     'django_filters',
@@ -35,6 +33,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'rest_framework',
 
+    'apps.apps.AppConfig4OAuth',
     'apps.apps.AppConfig4Users',
 ]
 

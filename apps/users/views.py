@@ -176,9 +176,12 @@ class UserPermissionViewSet(
     lookup_field = 'codename'
     lookup_value_regex = '[^/]+'
     permission_classes = [TokenHasScope]
-    queryset = find_permissions()
     required_scopes = ['users.admin']
     serializer_class = UserPermissionSerializer
+
+    @property
+    def queryset(self):
+        return find_permissions()
 
     def perform_create(self, serializer):
         user = self.kwargs.get('parent_lookup_user__uuid')
@@ -229,9 +232,12 @@ class GroupPermissionViewSet(
     lookup_field = 'codename'
     lookup_value_regex = '[^/]+'
     permission_classes = [TokenHasScope]
-    queryset = find_permissions()
     required_scopes = ['groups.admin']
     serializer_class = GroupPermissionSerializer
+
+    @property
+    def queryset(self):
+        return find_permissions()
 
     def perform_create(self, serializer):
         group = self.kwargs.get('parent_lookup_group__name')
@@ -259,9 +265,12 @@ class PermissionViewSet(
     lookup_field = 'codename'
     lookup_value_regex = '[^/]+'
     permission_classes = [TokenHasScope]
-    queryset = find_permissions()
     required_scopes = ['permissions.admin']
     serializer_class = PermissionSerializer
+
+    @property
+    def queryset(self):
+        return find_permissions()
 
     def perform_destroy(self, instance):
         if get_permission(
