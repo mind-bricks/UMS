@@ -1,3 +1,6 @@
+from base64 import urlsafe_b64encode
+from uuid import uuid1
+
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import (
@@ -9,6 +12,7 @@ from ..authentication import (
     grant as auth_grant,
 )
 from .access import (
+    create_user,
     create_group,
     create_permission,
     get_user,
@@ -60,6 +64,7 @@ class UserLoginSerializer(serializers.Serializer):
         required=False,
     )
     username = serializers.CharField(
+        source='realm_username',
         max_length=128,
         write_only=True,
     )
@@ -84,7 +89,7 @@ class UserLoginSerializer(serializers.Serializer):
     def create(self, validated_data):
         user = get_user(
             realm=validated_data['realm'],
-            realm_username=validated_data['username'],
+            realm_username=validated_data['realm_username'],
             is_active=True,
         )
         if (
@@ -145,9 +150,26 @@ class UserPasswordSerializer(serializers.Serializer):
 
 
 class UserSignupSerializer(serializers.Serializer):
+    realm = serializers.CharField(
+        read_only=True
+    )
+    username = serializers.CharField(
+        source='realm_username',
+        max_length=128,
+    )
+    password = serializers.CharField(
+        max_length=128,
+        write_only=True,
+        required=True,
+    )
 
     def create(self, validated_data):
-        raise AssertionError('not allowed')
+        validated_data['username'] = urlsafe_b64encode(
+            uuid1().bytes).strip(b'=').decode()
+        instance = create_user(**validated_data)
+        if not instance:
+            raise exceptions.ValidationError('username already used')
+        return instance
 
     def update(self, instance, validated_data):
         raise AssertionError('not allowed')

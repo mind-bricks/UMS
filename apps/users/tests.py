@@ -115,6 +115,27 @@ class AdminTest(test.APITestCase):
 
 class UserAdminTest(AdminTest):
 
+    def test_signup_user(self):
+        url_signup = reverse.reverse('users:users-signup')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_user))
+        response = self.client.post(url_signup, data={
+            'username': 'test_user_tmp',
+            'password': '1234567',
+        })
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
+        response = self.client.post(url_signup, data={
+            'username': 'test_user_tmp',
+            'password': '1234567',
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('realm'), '')
+        self.assertEqual(response.data.get('username'), 'test_user_tmp')
+        self.assertNotIn('password', response.data)
+
     def test_list_user(self):
         url_list = reverse.reverse('users:users-list')
 

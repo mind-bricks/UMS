@@ -25,9 +25,12 @@ from .models import (
 )
 
 
-def create_user(**kwargs):
+def create_user(username=None, password=None, **kwargs):
     try:
-        instance = User(**kwargs)
+        assert username is not None
+        assert password is not None
+        instance = User(username=username, **kwargs)
+        instance.set_password(password)
         instance.save()
         return instance
     except IntegrityError:

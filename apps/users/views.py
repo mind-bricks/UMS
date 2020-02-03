@@ -27,6 +27,7 @@ from .serializers import (
     UserSerializer,
     UserLoginSerializer,
     UserPasswordSerializer,
+    UserSignupSerializer,
     UserGroupSerializer,
     UserPermissionSerializer,
     GroupSerializer,
@@ -108,6 +109,17 @@ class UserViewSet(
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
+        return response.Response(serializer.data)
+
+    @decorators.action(
+        methods=['post'],
+        detail=False,
+        serializer_class=UserSignupSerializer,
+    )
+    def signup(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(realm=request.user.realm)
         return response.Response(serializer.data)
 
     @decorators.action(
