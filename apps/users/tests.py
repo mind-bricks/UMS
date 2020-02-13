@@ -148,7 +148,7 @@ class UserAdminTest(AdminTest):
             HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
         response = self.client.get(url_list)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get('count'), 2)
+        self.assertEqual(response.data.get('count'), 3)
 
     def test_retrieve_user(self):
         url_detail = reverse.reverse(

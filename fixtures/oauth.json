@@ -1,0 +1,18 @@
+[
+  {
+    "model": "oauth.application",
+    "pk": 1,
+    "fields": {
+      "client_id": "L8GNY78qYX1caGrsGw0mwh70ZSuqSbBtY3013jgX",
+      "user": 1,
+      "redirect_uris": "",
+      "client_type": "confidential",
+      "authorization_grant_type": "client-credentials",
+      "client_secret": "h3uIhoazt4AuRW5yGowcjdKu3nUrvxsJUA0zIosvieRwpGGT8tUxD49KpNor79Ju7oVjcfVM1uwhDybC8aSJleWwkOh2pqMA2W9JgyZdtnDwKxCKZ1zVdGHP9H3XRFy4",
+      "name": "SYSTEM",
+      "skip_authorization": false,
+      "created": "2018-04-18T12:22:12.699Z",
+      "updated": "2018-04-19T12:09:11.811Z"
+    }
+  }
+]

@@ -16,13 +16,14 @@ class IntrospectTokenSerializer(serializers.Serializer):
     user = serializers.DictField(
         read_only=True,
     )
+
     # mutex = serializers.CharField(
     #     max_length=4,
     #     read_only=True,
     # )
 
     def create(self, validated_data):
-        raise AssertionError('not allowed')
+        return {k: v for k, v in validated_data.items()}
 
     def update(self, instance, validated_data):
         raise AssertionError('not allowed')

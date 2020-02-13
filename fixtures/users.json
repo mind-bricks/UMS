@@ -59,5 +59,18 @@
         4
       ]
     }
+  },
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "uuid": "55a0ba10-4e14-11ea-a8f5-a86bad54c153",
+      "realm": "SYSTEM",
+      "realm_username": "admin",
+      "password": "",
+      "user_permissions": [
+        1
+      ]
+    }
   }
 ]
