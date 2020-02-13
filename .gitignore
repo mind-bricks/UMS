@@ -118,3 +118,5 @@ nohup.out
 .logs/
 .static/
 env356
+
+settings/local.py
