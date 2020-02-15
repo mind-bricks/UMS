@@ -12,6 +12,7 @@ class OAuthTest(test.APITestCase):
     fixtures = [
         os.path.join('fixtures', 'users.json'),
         os.path.join('fixtures', 'oauth.json'),
+        os.path.join('fixtures', 'test_users.json'),
     ]
 
     def test_oauth_introspect(self):
@@ -39,3 +40,21 @@ class OAuthTest(test.APITestCase):
         self.assertIn('exp', response.data)
         self.assertIn('scope', response.data)
         self.assertIn('user', response.data)
+        self.assertIn('introspection', response.data.get('scope'))
+
+        # login test user
+        url_login = reverse.reverse('users:users-login')
+        response = self.client.post(url_login, data={
+            'username': 'test_user',
+            'password': 'abcdefgh',
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        access_token_user = response.data.get('access_token')
+
+        response = self.client.post(
+            url_introspection, {'token': access_token_user})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('exp', response.data)
+        self.assertIn('scope', response.data)
+        self.assertIn('user', response.data)
+        self.assertIn('test.permission_1', response.data.get('scope'))

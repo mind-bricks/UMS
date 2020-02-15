@@ -18,6 +18,7 @@ from .access import (
     get_user,
     get_group,
     get_permission,
+    find_user_permissions,
 )
 from .models import (
     User,
@@ -103,6 +104,10 @@ class UserLoginSerializer(serializers.Serializer):
 
         access_token, refresh_token = auth_grant(
             user,
+            scopes=frozenset(
+                s.codename for
+                s in find_user_permissions(user)
+            ),
             expire=USERS_LOGIN_EXPIRE,
         )
 
