@@ -285,7 +285,7 @@ class PermissionAdminTest(AdminTest):
             HTTP_AUTHORIZATION='Bearer {}'.format(self.access_token_of_admin))
         response = self.client.get(url_list)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get('count'), 11)
+        self.assertEqual(response.data.get('count'), 13)
 
     def test_create_permission(self):
         url_list = reverse.reverse('users:permissions-list')

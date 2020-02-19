@@ -48,6 +48,30 @@
     }
   },
   {
+    "model": "auth.permission",
+    "pk": 10,
+    "fields": {
+      "name": "cms.admin",
+      "codename": "cms.admin",
+      "content_type": [
+        "auth",
+        "permission"
+      ]
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 11,
+    "fields": {
+      "name": "cms.users",
+      "codename": "cms.users",
+      "content_type": [
+        "auth",
+        "permission"
+      ]
+    }
+  },
+  {
     "model": "auth.group",
     "pk": 1,
     "fields": {
