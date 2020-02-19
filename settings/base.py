@@ -163,3 +163,9 @@ OAUTH2_PROVIDER = {
     'SCOPES_BACKEND_CLASS': 'apps.backends.SettingsScopes',
     'REFRESH_TOKEN_EXPIRE_SECONDS': 86400,
 }
+
+# Swagger
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {},
+}
